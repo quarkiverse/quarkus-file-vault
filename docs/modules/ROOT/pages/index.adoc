@@ -1,0 +1,323 @@
+= Quarkus - Kerberos
+:extension-status: preview
+
+== Introduction
+
+link:https://www.kerberos.org/software/tutorial.html[Kerberos] is a network authentication protocol.
+
+Client acquires a `service ticket` from Kerberos `Key Distribution Center` (`KDC`) and submits it to an application which will verify it with its service principal against `KDC` and grant an access if the verification has been successful.
+
+This extension supports `Kerberos version 5` with the `HTTP` link:https://datatracker.ietf.org/doc/html/rfc4559[Negotiate] authentication scheme which is based on the `Simple And Protected Negotiate Mechanism` (`SPNEGO`) and the `Generic Security Services Application Program Interface` (`GSSAPI`).
+
+== Installation
+
+If you want to use this extension, you need to add the `io.quarkiverse.kerberos:quarkus-kerberos` extension first.
+In your `pom.xml` file, add:
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.quarkiverse.kerberos</groupId>
+    <artifactId>quarkus-kerberos</artifactId>
+</dependency>
+----
+
+== Getting Started
+
+First you have to prepare your Kerberos environment. The description of how it should be done securely is out of scope of this document, please follow the deployment specfic policies.
+
+However, here is a sequence of steps you can try for a quick test:
+
+* Install Kerberos:
+
+Fedora: `[root@server ~]# yum install krb5-server krb5-libs krb5-workstation`.
+If you do not use Fedora then follow the OS specific instructions.
+
+* Edit `/etc/krb5.conf` - either uncomment the configuration related to `EXAMPLE.COM` or add a new realm, example, `QUARKUS.COM`. Make sure the realm's `kdc` and `admin_server` properties point to `localhost`.
+
+* Create the database: `kdb5_util create -s`.
+
+* Start `kadmin.local` and add principals and keytabs in its command line:
+
+User principal:
+
+`addprinc bob`
+(use password `bob` or whatever you prefer)
+
+Service principal:
+
+`addprinc HTTP/localhost`
+(use password `service` or whatever you prefer)
+
+Add a keytab for the service principal:
+
+`ktadd -k /etc/service.keytab HTTP/localhost`
+
+and press `q` to exit.
+
+To make it easier to test you may need to do `chmod og+r /etc/*.keytab` since you are creating them as a root but you'll run Quarkus App without the root permissions.
+
+* start KDC: `systemctl start krb5kdc.service` and `systemctl start kadmin.service`
+
+* Prepare a service ticket for `bob`: `kinit bob`
+
+* Create your Quarkus application which will use this extension. Lets assume it has a JAX-RS method with a `/api/users/me` path and which returns a user name. Update its `application.properties` to point to the service principal key tab: `quarkus.kerberos.keytab-path=/etc/service.keytab`.
+
+* Build and start the application and test it:
+
+`curl --negotiate -u bob@EXAMPLE.COM -v http://localhost:8080/api/users/me`
+
+It should return `bob`.
+
+== How to configure the extension.
+
+In many cases all you will need is to ensure the service principal password or its keytab is accessible. If you have created a keytab file then use `quarkus.kerberos.keytab-path` to point to it - using the keytab is recommended.
+
+If you haven't created a keytab just yet then you can register a custom callback handler, for example:
+
+```java
+import javax.enterprise.context.ApplicationScoped;
+
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
+import io.quarkiverse.kerberos.KerberosCallbackHandler;
+
+@ApplicationScoped
+public class UsernamePasswordCallbackHandler implements KerberosCallbackHandler {
+        private final String username;
+        private final char[] password;
+
+        private UsernamePasswordCallbackHandler(final String username, final char[] password) {
+            this.username = username;
+            this.password = password;
+        }
+
+        @Override
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            for (Callback current : callbacks) {
+                if (current instanceof NameCallback) {
+                    NameCallback ncb = (NameCallback) current;
+                    ncb.setName(username);
+                } else if (current instanceof PasswordCallback) {
+                    PasswordCallback pcb = (PasswordCallback) current;
+                    pcb.setPassword(password);
+                } else {
+                    throw new UnsupportedCallbackException(current);
+                }
+            }
+        }
+    }
+}
+```
+
+Note `io.quarkiverse.kerberos.KerberosCallbackHandler` extends `javax.security.auth.callback.Callback` - it only acts as a marker interface for this extension to avoid having unrelated CallbackHandlers injected.
+
+The service principal name itself is calculated from the current HTTP `Host` header, for example, given `Host: localhost:8080` the name will be calculated as `HTTP/localhost`.
+If necessay it can be customized with `quarkus.kerberos.service-principal-name`.
+
+If the `KDC` configuration has no default realm configured then a service principal realm can be set with `quarkus.kerberos.service-principal-realm`.
+
+== User Principal
+
+You can access a user principal in the service code once the authentication has been completed, for example:
+
+```java
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+
+import io.quarkiverse.kerberos.KerberosPrincipal;
+
+import io.quarkus.security.Authenticated;
+import io.quarkus.security.identity.SecurityIdentity;
+
+@Path("/api/users")
+@Authenticated
+public class UsersResource {
+
+    @Inject
+    SecurityIdentity identity;
+    @Inject
+    KerberosPrincipal kerberosPrincipal;
+
+    @GET
+    @Path("/me")
+    @Produces("text/plain")
+    public String me() {
+        return identity.getPrincipal().getName();
+    }
+}
+```
+
+For example, given `bob@EXAMPLE.COM`, a simple `bob` name will be returned.
+You can cast `Principal` to `io.quarkiverse.kerberos.KerberosPrincipal` or inject it directly and get a full `bob@EXAMPLE.COM` (or `bob/admin@EXAMPLE.COM`) name and the realm part of the name, `EXAMPLE.COM`. If the principal name contains an `instance` qualifier such as `bob/admin` then `KerberosPrincipal` will return `admin` as the role name. 
+
+== JAAS Login Configuration
+
+The extension will generate a JAAS Login Configuration by default.
+
+However, if you have an existing JAAS Login Configuration then set `quarkus.kerberos.login-context-name` to point to a JAAS Configuration entry and use a `java.security.auth.login.config' system property to point to the file containing this configuration entry.
+
+== Service Principal Subject Customization
+
+The extension will use `javax.security.auth.login.LoginContext` to create a `Subject` representing a service principal, using the auto-generated or external JAAS Login Configuration as well as the registered callback unless a keytab is used.
+
+You can customize this process by registering a custom `io.quarkiverse.kerberos.ServicePrincipalSubjectFactory`:
+
+```java
+import javax.enterprise.context.ApplicationScoped;
+import javax.security.auth.Subject;
+import io.quarkiverse.kerberos.ServicePrincipalSubjectFactory;
+
+@ApplicationScoped
+public class CustomServicePrincipalSubjectFactory implements ServicePrincipalSubjectFactory {
+        @Override
+        public Subject getSubjectForServicePrincipal(String servicePrincipalName) {
+            ....
+        }
+    }
+}
+```
+
+== Dev Services for Kerberos
+
+link:https://quarkus.io/guides/dev-services[Quarkus Dev Services] support the automatic provisioning of unconfigured services in development and test mode.
+
+This extension provides `Dev Services for Kerberos` which uses a link:https://github.com/kerberos-io/kerberos-docker[Kerberos Docker] image.
+
+Start your application in a link:https://quarkus.io/guides/getting-started#development-mode[Dev Mode] with `mvn quarkus:dev`.
+
+You will see in the console something similar to:
+
+```shell
+$ mvn quarkus:dev
+
+2021-10-07 10:56:18,276 INFO  [🐳 [gcavalcante8808/krb5-server:latest]] (build-18) Creating container for image: gcavalcante8808/krb5-server:latest
+...
+2021-10-07 10:56:18,881 INFO  [🐳 [gcavalcante8808/krb5-server:latest]] (build-18) Container gcavalcante8808/krb5-server:latest started in PT0.621235S
+...
+Initializing database '/var/lib/krb5kdc/principal' for realm 'EXAMPLE.COM',
+...
+Principal "admin/admin@EXAMPLE.COM" created.
+
+2021-10-07 10:56:19,149 INFO  [io.qua.ker.dep.dev.KerberosDevServicesProcessor] (build-18) Kerberos configuration file path: /tmp/devservices-krb516887219905674106017.conf, mapped KDC port: 32771, mapped admin server port: 32769
+2021-10-07 10:56:19,152 INFO  [io.qua.ker.dep.dev.KerberosDevServicesProcessor] (build-18) Dev Services for Kerberos started.
+
+```
+
+`HTTP/localhost` service principal (with a `servicepwd` password) as well as `alice` and `bob` user principals (with passwords equal to their names) are created by default in a default `EXAMPLE.COM` realm.
+
+Different users can be set with a `quarkus.kerberos.devservices.users` map property, for example, `quarkus.kerberos.devservices.users.jduke=theduke`, etc.
+The service principal can be customized with `quarkus.kerberos.service-principal-name`, its password - with `quarkus.kerberos.service-principal-password`, the realm - with either `quarkus.kerberos.devservices.realm` or `quarkus.kerberos.service-principal-realm`.
+
+Now you can set a `KRB5_CONFIG` environment property pointing to the file such as `/tmp/devservices-krb516887219905674106017.conf`, use `kinit` to prepare a ticket granting ticket for a specific user and use the browser or `curl` to test the endpoint. Dedicated link:https://quarkus.io/guides/dev-ui[Dev UI] for Dev Services For Kerberos might be offered in the future as well.
+
+== Testing
+
+You can test this extension with `Dev Services for Kerberos` or link:https://directory.apache.org/[Apache Directory Service].
+
+In both cases add the following dependency:
+
+```xml
+<dependency>
+   <groupId>io.quarkiverse.kerberos</groupId>
+   <artifactId>quarkus-kerberos-test-util</artifactId>
+   <version>${version.quarkus.kerberos.test.util}</version>
+   <scope>test</scope>
+</dependency>
+
+```
+
+=== With Dev Services
+
+You can write the test code like this when using Dev Services:
+
+```java
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
+import io.quarkiverse.kerberos.test.utils.KerberosTestClient;
+import io.restassured.RestAssured;
+
+public class SpnegoAuthenticationTestCase {
+    public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
+    public static final String NEGOTIATE = "Negotiate";
+
+    KerberosTestClient kerberosTestClient = new KerberosTestClient();
+
+    @Test
+    public void testSpnegoSuccess() throws Exception {
+
+        var header = RestAssured.get("/identity")
+                .then().statusCode(401).extract().header(WWW_AUTHENTICATE);
+        assertEquals(NEGOTIATE, header);
+
+        var result = kerberosTestClient.get("/identity", "alice", "alice");
+        result.statusCode(200).body(Matchers.is("alice"));
+    }
+}
+
+```
+
+=== With Apache Directory Service
+
+You can write the same test code you can do with `Dev Services for Kerberos` but you'll also need to add a test resource initializing Apache DS:
+
+```java
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+
+import io.quarkiverse.kerberos.test.utils.KerberosKDCTestResource;
+import io.quarkiverse.kerberos.test.utils.KerberosTestClient;
+import io.quarkus.test.common.QuarkusTestResource;
+import io.restassured.RestAssured;
+
+@QuarkusTestResource(KerberosKDCTestResource.class)
+public class SpnegoAuthenticationTestCase {
+    public static final String WWW_AUTHENTICATE = "WWW-Authenticate";
+    public static final String NEGOTIATE = "Negotiate";
+
+    KerberosTestClient kerberosTestClient = new KerberosTestClient();
+
+    @Test
+    public void testSpnegoSuccess() throws Exception {
+
+        var header = RestAssured.get("/identity")
+                .then().statusCode(401).extract().header(WWW_AUTHENTICATE);
+        assertEquals(NEGOTIATE, header);
+
+        var result = kerberosTestClient.get("/identity", "jduke", "theduke");
+        result.statusCode(200).body(Matchers.is("jduke"));
+    }
+}
+```
+
+At the moment only a single `jduke` user is supported when testing with `Apache DS` and `Dev Services for Kerberos` have to be disabled: `quarkus.kerberos.devservices.enabled=false`.
+
+=== With Browser
+
+You can also configure your browser such as Firefox to use Negotiate Mechanism.
+
+A good summary is provided link:https://support.pingidentity.com/s/article/How-to-configure-supported-browsers-for-Kerberos-NTLM[here].
+
+For example, if you run your application on the `localhost` then add `localhost` (without a port) as the only value to the Firefox `about:config/network.negotiate-auth.trusted-uris` property.
+
+Next, use `kinit` to create a ticket granting ticket (`TGT`) for a selected user principal for the browser to use this `TGT`. Make sure `kinit` sees the same Kerberos KDC configuration which the browser will see for both `kinit` (and other Kerberos tools) and the browser to work with the same Kerberos KDC instance.
+
+If the default Kerberos KDC configuration at `/etc/krb5.conf` is used then you don't even need to restart a browser. If a custom Kerberos KDC configuration is used by `kinit` then point to it with `KRB5_CONFIG` and either update `~/.bashrc` or launch the browser from the shell where `KRB5_CONFIG` is set.
+
+Now open your browser and access the endpoint - the browser will do the negotiation using the created `TGT` without asking for a user name and password.
+
+[[extension-configuration-reference]]
+== Extension Configuration Reference
+
+include::config.adoc[leveloffset=+1, opts=optional]
