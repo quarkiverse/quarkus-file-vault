@@ -1,0 +1,15 @@
+---
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
+name: "File Vault"
+metadata:
+  keywords:
+    - "vault"
+    - "keystore"
+    - "secret"
+    - "password"
+  categories:
+    - "security"
+  status: "experimental"
+  config:
+    - "quarkus.file.vault."
+ 

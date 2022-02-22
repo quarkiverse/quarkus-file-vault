@@ -5,7 +5,7 @@
 
 _Credentials Provider which extracts secrets from Java KeyStore_
 
-This project provides Quarkus [CredentialsProvider](https://quarkus.io/guides/credentials-provider) which extract sensitive data such as passwords from Java KeyStore.
+This project provides Quarkus [CredentialsProvider](https://quarkus.io/guides/credentials-provider) which extracts sensitive data such as passwords from Java KeyStore.
 
 To get started, add the dependency:
 
