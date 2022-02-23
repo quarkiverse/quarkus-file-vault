@@ -81,6 +81,46 @@ This is way you can refer to the same keystore but use a different alias each ti
 
 However, you can choose for only a `password` property be returned with `quarkus.file.vault.set-alias-as-user=false`. In this case you will need to configure a username with the extension specific property, for example, when working with `Agroal` you can use `quarkus.datasource.username`.
 
+== Protecting the keystore passwords.
+
+If you need to avoid setting a keystore password in `application.properties` then you can use a custom `ConfigSource`, for example:
+
+[source,java]
+----
+package io.quarkiverse.filevault.it;
+
+import java.util.Set;
+
+import org.eclipse.microprofile.config.spi.ConfigSource;
+
+public class KeyStoreConfigSource implements ConfigSource {
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return Set.of("db1.storepassword");
+    }
+
+    @Override
+    public String getValue(String propertyName) {
+        return "db1.storepassword".equals(propertyName) ? "storepassword" : null;
+    }
+
+    @Override
+    public String getName() {
+        return "file-vault-config-source";
+    }
+
+}
+----
+
+add `org.eclipse.microprofile.config.spi.ConfigSource` service provider entry listing `io.quarkiverse.filevault.it.KeyStoreConfigSource` to `META-INF/services` and then refer to the keystore password like this:
+
+[source,properties]
+----
+quarkus.file.vault.provider.db1.path=dbpasswords.p12
+quarkus.file.vault.provider.db1.secret=${db1.storepassword}
+----
+
 [[extension-configuration-reference]]
 == Extension Configuration Reference
 
