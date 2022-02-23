@@ -5,7 +5,7 @@
 
 This project provides Quarkus link:https://quarkus.io/guides/credentials-provider[CredentialsProvider] which extracts passwords and other sensitive data from Java `KeyStore`.
 
-Java `KeyStore` is used as a file-based `Vault`. Sensitive data can be imported to and securely stored in this `Vault`as Java `SecretKey` values. 
+Java `KeyStore` is used as a file-based `Vault`. Sensitive data can be imported to and securely stored in this `Vault` as Java `SecretKey` values. 
 
 == Installation
 
@@ -122,6 +122,34 @@ add `org.eclipse.microprofile.config.spi.ConfigSource` service provider entry li
 quarkus.file.vault.provider.db1.path=dbpasswords.p12
 quarkus.file.vault.provider.db1.secret=${db1.storepassword}
 ----
+
+== Using FileVaultCredentialsProvider directly
+
+You can access this `CredentialsProvider` like this from your code:
+
+[source,java]
+----
+package io.quarkiverse.filevault.it;
+
+import io.quarkus.credentials.CredentialsProvider;
+import io.quarkus.credentials.runtime.CredentialsProviderFinder;
+...
+
+CredentialsProvider cp = CredentialsProviderFinder.find("quarkus.file.vault");
+
+// Use a `quarkus_test` alias to get a secret value from the keystore `db1`
+// where the alias is set in `application.properties`:
+
+cp.getCredentials("quarkus.file.vault.provider.db1");
+
+// Use a `quarkus_test` alias to get a secret value from the keystore `db1` by passing it directly to the provider:
+
+cp.getCredentials("quarkus.file.vault.provider.db1.quarkus_test");
+---- 
+
+== ConfigSource
+
+Please remember that if necessary you can always use a custom `org.eclipse.microprofile.config.spi.ConfigSource` implementation to complement the functionality of `File Vault`.
 
 [[extension-configuration-reference]]
 == Extension Configuration Reference
