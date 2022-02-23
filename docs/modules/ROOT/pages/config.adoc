@@ -11,7 +11,7 @@ h|[[quarkus-file-vault_configuration]]link:#quarkus-file-vault_configuration[Con
 h|Type
 h|Default
 
-a|icon:lock[title=Fixed at build time] [[quarkus-file-vault_quarkus.file-vault.enabled]]`link:#quarkus-file-vault_quarkus.file-vault.enabled[quarkus.file-vault.enabled]`
+a|icon:lock[title=Fixed at build time] [[quarkus-file-vault_quarkus.file.vault.enabled]]`link:#quarkus-file-vault_quarkus.file.vault.enabled[quarkus.file-vault.enabled]`
 
 [.description]
 --
@@ -20,7 +20,7 @@ Determine if the File Vault extension is enabled
 |`true`
 
 
-a| [[quarkus-file-vault_quarkus.file-vault.provider]]`link:#quarkus-file-vault_quarkus.file-vault.provider[quarkus.file-vault.provider]`
+a| [[quarkus-file-vault_quarkus.file.vault.provider]]`link:#quarkus-file-vault_quarkus.file-vault.provider[quarkus.file.vault.provider]`
 
 [.description]
 --
@@ -28,7 +28,7 @@ Key Store configuration which can include Map `path`, `secret` and `alias` prope
 --|map
 |
 
-a| [[quarkus-file-vault_quarkus.file-vault.set-alias-as-user]]`link:#quarkus-file-vault_quarkus.file-vault.set-alias-as-user[quarkus.file-vault.set-alias-as-user]`
+a| [[quarkus-file-vault_quarkus.file.vault.set-alias-as-user]]`link:#quarkus-file-vault_quarkus.file-vault.set-alias-as-user[quarkus.file.vault.set-alias-as-user]`
 
 [.description]
 --
