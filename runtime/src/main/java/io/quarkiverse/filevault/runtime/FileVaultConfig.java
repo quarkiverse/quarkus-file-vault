@@ -6,7 +6,7 @@ import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
 
-@ConfigRoot(name = "file.vault", phase = ConfigPhase.BUILD_AND_RUN_TIME_FIXED)
+@ConfigRoot(name = "file.vault", phase = ConfigPhase.RUN_TIME)
 public class FileVaultConfig {
     /**
      * Java KeyStore configuration for a specific provider such as a database.
