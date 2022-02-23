@@ -11,7 +11,7 @@ h|[[quarkus-file-vault_configuration]]link:#quarkus-file-vault_configuration[Con
 h|Type
 h|Default
 
-a|icon:lock[title=Fixed at build time] [[quarkus-file-vault_quarkus.file.vault.enabled]]`link:#quarkus-file-vault_quarkus.file.vault.enabled[quarkus.file-vault.enabled]`
+a|icon:lock[title=Fixed at build time] [[quarkus-file-vault_quarkus.file.vault.enabled]]`link:#quarkus-file-vault_quarkus.file.vault.enabled[quarkus.file.vault.enabled]`
 
 [.description]
 --

@@ -3,7 +3,7 @@
 
 == Introduction
 
-This project provides Quarkus [CredentialsProvider](https://quarkus.io/guides/credentials-provider) which extracts passwords and other sensitive data from Java `KeyStore`.
+This project provides Quarkus link:https://quarkus.io/guides/credentials-provider[CredentialsProvider] which extracts passwords and other sensitive data from Java `KeyStore`.
 
 Java `KeyStore` is used as a file-based `Vault`. Sensitive data can be imported to and securely stored in this `Vault`as Java `SecretKey` values. 
 
@@ -14,8 +14,10 @@ In your `pom.xml` file, add:
 
 [source,xml]
 ----
-<groupId>io.quarkiverse.file-vault</groupId>
-<artifactId>quarkus-file-vault</artifactId>
+<dependency>
+    <groupId>io.quarkiverse.file-vault</groupId>
+    <artifactId>quarkus-file-vault</artifactId>
+</dependency>
 ----
 
 == Getting Started
