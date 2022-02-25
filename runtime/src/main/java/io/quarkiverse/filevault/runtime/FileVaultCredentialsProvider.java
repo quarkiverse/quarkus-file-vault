@@ -18,7 +18,7 @@ import io.quarkus.credentials.CredentialsProvider;
 @Named("quarkus.file.vault")
 @ApplicationScoped
 public class FileVaultCredentialsProvider implements CredentialsProvider {
-    private static String BASE_PROVIDER_NAME = "quarkus.file.vault.provider";
+    static String BASE_PROVIDER_NAME = "quarkus.file.vault.provider";
     private static String DEFAULT_KEY_STORE_FILE = "passwords.p12";
     private static String DEFAULT_KEY_STORE_SECRET = "secret";
     private static String DEFAULT_KEY_STORE_ALIAS = "user";
