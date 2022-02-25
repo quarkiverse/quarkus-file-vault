@@ -3,6 +3,9 @@ package io.quarkiverse.filevault.runtime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.KeyStore.Entry;
+import java.security.KeyStore.PasswordProtection;
+import java.security.KeyStore.SecretKeyEntry;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,7 +92,10 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
 
             for (Enumeration<String> aliases = keyStore.aliases(); aliases.hasMoreElements();) {
                 String alias = aliases.nextElement();
-                properties.put(alias, loadSecret(keyStore, keyStoreSecret, alias));
+                String storeEntry = loadStoreEntry(keyStore, keyStoreSecret, alias);
+                if (storeEntry != null) {
+                    properties.put(alias, storeEntry);
+                }
             }
 
             return properties;
@@ -102,8 +108,13 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
         }
     }
 
-    private static String loadSecret(KeyStore keyStore, String keyStoreSecret, String keyAlias) throws Exception {
-        SecretKey secretKey = (SecretKey) keyStore.getKey(keyAlias, keyStoreSecret.toCharArray());
-        return new String(secretKey.getEncoded(), "UTF-8");
+    private static String loadStoreEntry(KeyStore keyStore, String keyStoreSecret, String keyAlias) throws Exception {
+        Entry entry = keyStore.getEntry(keyAlias, new PasswordProtection(keyStoreSecret.toCharArray()));
+        if (entry instanceof SecretKeyEntry) {
+            SecretKey secretKey = ((SecretKeyEntry) entry).getSecretKey();
+            return new String(secretKey.getEncoded(), "UTF-8");
+        }
+        LOGGER.tracef("%s entry type %s is not supported", keyAlias, entry.getClass().getName());
+        return null;
     }
 }
