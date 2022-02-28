@@ -60,8 +60,7 @@ public class FileVaultCredentialsProviderTest {
         assertNull(creds.get(CredentialsProvider.PASSWORD_PROPERTY_NAME));
 
         String derEncodedCert = creds.get(FileVaultCredentialsProvider.CERTIFICATE_PROPERTY);
-        CertificateFactory cf = java.security.cert.CertificateFactory
-                .getInstance("X.509");
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
         X509Certificate cert = (X509Certificate) cf
                 .generateCertificate(new ByteArrayInputStream(derEncodedCert.getBytes(StandardCharsets.ISO_8859_1)));
         assertTrue(cert.getSubjectX500Principal().getName().startsWith("CN=Quarkus,OU=Quarkus,O=Quarkus"));

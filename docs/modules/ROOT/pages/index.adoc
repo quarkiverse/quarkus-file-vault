@@ -5,7 +5,7 @@
 
 This project provides Quarkus link:https://quarkus.io/guides/credentials-provider[CredentialsProvider] which extracts passwords and other sensitive data from Java `KeyStore`.
 
-Java `KeyStore` is used as a file-based `Vault`. Sensitive data can be imported to and securely stored in this `Vault` as Java `SecretKey` values. 
+Java `KeyStore` is used as a file-based `Vault`. Sensitive data can be imported to and securely stored in this `Vault` as Java `SecretKey` values. Imported certificates are also supported.
 
 == Installation
 
@@ -131,6 +131,12 @@ You can access this `CredentialsProvider` like this from your code:
 ----
 package io.quarkiverse.filevault.it;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+
+import java.util.Map;
 import io.quarkus.credentials.CredentialsProvider;
 import io.quarkus.credentials.runtime.CredentialsProviderFinder;
 ...
@@ -144,7 +150,18 @@ cp.getCredentials("quarkus.file.vault.provider.db1");
 
 // Use a `quarkus_test` alias to get a secret value from the keystore `db1` by passing it directly to the provider:
 
-cp.getCredentials("quarkus.file.vault.provider.db1.quarkus_test");
+Map<String, String> props = cp.getCredentials("quarkus.file.vault.provider.db1.quarkus_test");
+String user = props.get(CredentialsProvider.USER_PROPERTY_NAME);
+String secret = props.get(CredentialsProvider.PASSWORD_PROPERTY_NAME);
+
+// Use a `quarkus_cert` alias to get the encoded `X509Certificate` from the keystore `db1` by passing it directly to the provider:
+
+Map<String, String> props = cp.getCredentials("quarkus.file.vault.provider.db1.quarkus_cert");
+String user = props.get(CredentialsProvider.USER_PROPERTY_NAME);
+String encodedCert = props.get("certificate");
+CertificateFactory cf = CertificateFactory.getInstance("X.509");
+X509Certificate cert = (X509Certificate) cf
+   .generateCertificate(new ByteArrayInputStream(encodedCert.getBytes(StandardCharsets.ISO_8859_1)));
 ---- 
 
 == ConfigSource
