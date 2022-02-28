@@ -2,10 +2,14 @@ package io.quarkiverse.filevault.runtime;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.KeyStore.Entry;
 import java.security.KeyStore.PasswordProtection;
+import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStore.SecretKeyEntry;
+import java.security.KeyStore.TrustedCertificateEntry;
+import java.security.cert.Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,13 +26,15 @@ import io.quarkus.credentials.CredentialsProvider;
 @ApplicationScoped
 public class FileVaultCredentialsProvider implements CredentialsProvider {
     static String BASE_PROVIDER_NAME = "quarkus.file.vault.provider";
+    static String CERTIFICATE_PROPERTY = "certificate";
+
     private static String DEFAULT_KEY_STORE_FILE = "passwords.p12";
     private static String DEFAULT_KEY_STORE_SECRET = "secret";
     private static String DEFAULT_KEY_STORE_ALIAS = "user";
 
     private static final Logger LOGGER = Logger.getLogger(FileVaultCredentialsProvider.class.getName());
 
-    private Map<String, Map<String, String>> storeProperties = new HashMap<>();
+    private Map<String, Map<String, KeyStoreEntry>> storeProperties = new HashMap<>();
     private Map<String, String> defaultAliases = new HashMap<>();
     private boolean setAliasAsUser;
 
@@ -56,7 +62,7 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
         }
 
         final String keyStoreName = nameParts[4];
-        Map<String, String> keyStoreProperties = storeProperties.get(keyStoreName);
+        Map<String, KeyStoreEntry> keyStoreProperties = storeProperties.get(keyStoreName);
         if (keyStoreProperties == null) {
             LOGGER.warnf("Key store %s properties have not been found", keyStoreName);
             return Map.of();
@@ -67,7 +73,9 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
         String keyStoreAlias = nameParts.length == 6 ? nameParts[5] : defaultAliases.get(keyStoreName);
 
         if (keyStoreProperties.containsKey(keyStoreAlias)) {
-            credProviderProperties.put(PASSWORD_PROPERTY_NAME, keyStoreProperties.get(keyStoreAlias));
+            KeyStoreEntry entry = keyStoreProperties.get(keyStoreAlias);
+            String property = entry.cert ? CERTIFICATE_PROPERTY : PASSWORD_PROPERTY_NAME;
+            credProviderProperties.put(property, entry.value);
             if (setAliasAsUser) {
                 credProviderProperties.put(USER_PROPERTY_NAME, keyStoreAlias);
             }
@@ -79,7 +87,7 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
 
     }
 
-    private static Map<String, String> readKeyStore(Map<String, String> keyStoreProps) {
+    private static Map<String, KeyStoreEntry> readKeyStore(Map<String, String> keyStoreProps) {
 
         String keyStoreFile = keyStoreProps.getOrDefault("path", DEFAULT_KEY_STORE_FILE);
         String keyStoreSecret = keyStoreProps.getOrDefault("secret", DEFAULT_KEY_STORE_SECRET);
@@ -88,11 +96,11 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
             keyStore.load(fis, keyStoreSecret.toCharArray());
 
-            Map<String, String> properties = new HashMap<>();
+            Map<String, KeyStoreEntry> properties = new HashMap<>();
 
             for (Enumeration<String> aliases = keyStore.aliases(); aliases.hasMoreElements();) {
                 String alias = aliases.nextElement();
-                String storeEntry = loadStoreEntry(keyStore, keyStoreSecret, alias);
+                KeyStoreEntry storeEntry = loadStoreEntry(keyStore, keyStoreSecret, alias);
                 if (storeEntry != null) {
                     properties.put(alias, storeEntry);
                 }
@@ -108,13 +116,36 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
         }
     }
 
-    private static String loadStoreEntry(KeyStore keyStore, String keyStoreSecret, String keyAlias) throws Exception {
+    private static KeyStoreEntry loadStoreEntry(KeyStore keyStore, String keyStoreSecret, String keyAlias) throws Exception {
         Entry entry = keyStore.getEntry(keyAlias, new PasswordProtection(keyStoreSecret.toCharArray()));
         if (entry instanceof SecretKeyEntry) {
             SecretKey secretKey = ((SecretKeyEntry) entry).getSecretKey();
-            return new String(secretKey.getEncoded(), "UTF-8");
+            return new KeyStoreEntry(new String(secretKey.getEncoded(), "UTF-8"));
+        } else if (entry instanceof PrivateKeyEntry) {
+            Certificate[] certChain = keyStore.getCertificateChain(keyAlias);
+            if (certChain != null && certChain.length > 0) {
+                return new KeyStoreEntry(new String(certChain[0].getEncoded(), StandardCharsets.ISO_8859_1), true);
+            }
+        } else if (entry instanceof TrustedCertificateEntry) {
+            return new KeyStoreEntry(new String(((TrustedCertificateEntry) entry).getTrustedCertificate().getEncoded(),
+                    StandardCharsets.ISO_8859_1), true);
         }
         LOGGER.tracef("%s entry type %s is not supported", keyAlias, entry.getClass().getName());
         return null;
+    }
+
+    private static class KeyStoreEntry {
+        String value;
+        boolean cert;
+
+        KeyStoreEntry(String value) {
+            this.value = value;
+        }
+
+        KeyStoreEntry(String value, boolean cert) {
+            this.value = value;
+            this.cert = cert;
+        }
+
     }
 }
