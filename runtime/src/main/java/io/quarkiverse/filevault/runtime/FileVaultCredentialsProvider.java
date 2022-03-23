@@ -2,7 +2,12 @@ package io.quarkiverse.filevault.runtime;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.KeyStore.Entry;
 import java.security.KeyStore.PasswordProtection;
@@ -92,7 +97,28 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
         String keyStoreFile = keyStoreProps.getOrDefault("path", DEFAULT_KEY_STORE_FILE);
         String keyStoreSecret = keyStoreProps.getOrDefault("secret", DEFAULT_KEY_STORE_SECRET);
 
-        try (InputStream fis = Thread.currentThread().getContextClassLoader().getResourceAsStream(keyStoreFile)) {
+        URL keyStoreFileUrl = null;
+        if ((keyStoreFileUrl = Thread.currentThread().getContextClassLoader().getResource(keyStoreFile)) != null) {
+            return readKeyStore(keyStoreFileUrl, keyStoreSecret);
+        } else {
+            Path filePath = Paths.get(keyStoreFile);
+            if (Files.exists(filePath)) {
+                try {
+                    return readKeyStore(filePath.toUri().toURL(), keyStoreSecret);
+                } catch (MalformedURLException e) {
+                    LOGGER.errorf("Keystore %s location is not a valid URL", keyStoreFile);
+                    throw new RuntimeException(e);
+                }
+            } else {
+                LOGGER.errorf("Keystore %s can not be found on the classpath and the file system", keyStoreFile);
+                throw new RuntimeException();
+            }
+        }
+    }
+
+    private static Map<String, KeyStoreEntry> readKeyStore(URL keyStoreFileUrl, String keyStoreSecret) {
+
+        try (InputStream fis = keyStoreFileUrl.openStream()) {
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
             keyStore.load(fis, keyStoreSecret.toCharArray());
 
@@ -108,10 +134,10 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
 
             return properties;
         } catch (IOException e) {
-            LOGGER.errorf("Keystore %s can not be loaded", keyStoreFile);
+            LOGGER.errorf("Keystore %s can not be loaded", keyStoreFileUrl.toString());
             throw new RuntimeException(e);
         } catch (Exception e) {
-            LOGGER.errorf("Keystore %s entries can not be loaded", keyStoreFile);
+            LOGGER.errorf("Keystore %s entries can not be loaded", keyStoreFileUrl.toString());
             throw new RuntimeException(e);
         }
     }
