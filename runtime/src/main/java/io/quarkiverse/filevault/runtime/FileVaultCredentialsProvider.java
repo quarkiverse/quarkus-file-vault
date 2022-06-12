@@ -25,6 +25,7 @@ import javax.inject.Named;
 
 import org.jboss.logging.Logger;
 
+import io.quarkiverse.filevault.runtime.encrypt.EncryptionUtil;
 import io.quarkus.credentials.CredentialsProvider;
 
 @Named("quarkus.file.vault")
@@ -95,7 +96,16 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
     private static Map<String, KeyStoreEntry> readKeyStore(Map<String, String> keyStoreProps) {
 
         String keyStoreFile = keyStoreProps.getOrDefault("path", DEFAULT_KEY_STORE_FILE);
-        String keyStoreSecret = keyStoreProps.getOrDefault("secret", DEFAULT_KEY_STORE_SECRET);
+        String keyStoreSecret = keyStoreProps.get("secret");
+
+        if (keyStoreSecret != null) {
+            String encryptionKey = keyStoreProps.get("encryption-key");
+            if (encryptionKey != null) {
+                keyStoreSecret = EncryptionUtil.decrypt(keyStoreSecret, encryptionKey);
+            }
+        } else {
+            keyStoreSecret = DEFAULT_KEY_STORE_SECRET;
+        }
 
         URL keyStoreFileUrl = null;
         if ((keyStoreFileUrl = Thread.currentThread().getContextClassLoader().getResource(keyStoreFile)) != null) {

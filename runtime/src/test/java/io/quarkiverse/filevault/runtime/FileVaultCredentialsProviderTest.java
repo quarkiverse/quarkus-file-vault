@@ -1,6 +1,7 @@
 package io.quarkiverse.filevault.runtime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,6 +14,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import io.quarkiverse.filevault.runtime.encrypt.EncryptionUtil;
 import io.quarkus.credentials.CredentialsProvider;
 
 public class FileVaultCredentialsProviderTest {
@@ -34,6 +36,17 @@ public class FileVaultCredentialsProviderTest {
     @Test
     public void testGetPasswordOnly() throws Exception {
         CredentialsProvider cp = createCredentialsProvider(true, false);
+        Map<String, String> creds = cp.getCredentials(FileVaultCredentialsProvider.BASE_PROVIDER_NAME + "." + PROVIDER_NAME);
+        assertEquals(1, creds.size());
+        assertNull(creds.get(CredentialsProvider.USER_PROPERTY_NAME));
+        assertEquals(STORED_PASSWORD, creds.get(CredentialsProvider.PASSWORD_PROPERTY_NAME));
+    }
+
+    @Test
+    public void testGetMaskedPasswordOnly() throws Exception {
+        String masked = EncryptionUtil.encrypt("storepassword", "somearbitrarycrazystringthatdoesnotmatter");
+        assertNotEquals("storepassword", masked);
+        CredentialsProvider cp = createCredentialsProvider(true, false, true, masked);
         Map<String, String> creds = cp.getCredentials(FileVaultCredentialsProvider.BASE_PROVIDER_NAME + "." + PROVIDER_NAME);
         assertEquals(1, creds.size());
         assertNull(creds.get(CredentialsProvider.USER_PROPERTY_NAME));
@@ -66,15 +79,30 @@ public class FileVaultCredentialsProviderTest {
         assertTrue(cert.getSubjectX500Principal().getName().startsWith("CN=Quarkus,OU=Quarkus,O=Quarkus"));
     }
 
-    private CredentialsProvider createCredentialsProvider(boolean includeAlias, boolean setAliasAsUser) {
-        FileVaultConfig config = new FileVaultConfig();
+    private Map<String, String> createKeystoreProps(boolean includeAlias, boolean isSecretMasked, String secret) {
         Map<String, String> keyStoreProps = new HashMap<>();
         keyStoreProps.put("path", "dbpasswords.p12");
-        keyStoreProps.put("secret", "storepassword");
+        keyStoreProps.put("secret", secret);
+
         if (includeAlias) {
             keyStoreProps.put("alias", KEY_ALIAS);
         }
-        config.provider = Map.of(PROVIDER_NAME, keyStoreProps);
+
+        if (isSecretMasked) {
+            keyStoreProps.put("encryption-key", "somearbitrarycrazystringthatdoesnotmatter");
+        }
+
+        return keyStoreProps;
+    }
+
+    private CredentialsProvider createCredentialsProvider(boolean includeAlias, boolean setAliasAsUser) {
+        return createCredentialsProvider(includeAlias, setAliasAsUser, false, "storepassword");
+    }
+
+    private CredentialsProvider createCredentialsProvider(boolean includeAlias, boolean setAliasAsUser, boolean isSecretMasked,
+            String secret) {
+        FileVaultConfig config = new FileVaultConfig();
+        config.provider = Map.of(PROVIDER_NAME, createKeystoreProps(includeAlias, isSecretMasked, secret));
         config.setAliasAsUser = setAliasAsUser;
         return new FileVaultCredentialsProvider(config);
     }
