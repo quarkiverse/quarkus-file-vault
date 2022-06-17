@@ -24,7 +24,7 @@ a| [[quarkus-file-vault_quarkus.file.vault.provider]]`link:#quarkus-file-vault_q
 
 [.description]
 --
-Key Store configuration which can include Map `path` (path to the keystore), `secret` (keystore password) and `alias` (required secret key alias) properties, for example, `quarkus.file.vault.provider.db1.path`, `quarkus.file.vault.provider.db1.secret`, `quarkus.file.vault.provider.db1.alias`.
+Key Store configuration which can include Map `path` (path to the keystore), `secret` (keystore password), `encryption-key` (required if `secret` is a masked keystore password) and `alias` (required secret key alias) properties, for example, `quarkus.file.vault.provider.db1.path`, `quarkus.file.vault.provider.db1.secret`, `quarkus.file.vault.provider.db1.encryption-key`, `quarkus.file.vault.provider.db1.alias`.
 --|Map
 |
 

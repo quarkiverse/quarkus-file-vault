@@ -168,6 +168,54 @@ X509Certificate cert = (X509Certificate) cf
 
 Please remember that if necessary you can always use a custom `org.eclipse.microprofile.config.spi.ConfigSource` implementation to complement the functionality of `File Vault`.
 
+== Masking the secret keystore
+
+If you need to masking the `quarkus.file.vault.provider.<name>.secret` you will need to build and package the link:https://github.com/quarkiverse/quarkus-file-vault/tree/main/vault-utils[Vault Utils] project.
+
+[source,shell]
+----
+mvn clean install
+----
+
+After that, you will be able to execute the `--help` command:
+
+[source,shell]
+----
+$ java -jar target/quarkus-app/quarkus-run.jar --help
+
+Usage: Encrypt Secret Util [-hV] -e=<encryptionKey> [-i=<iterationCount>] -p=<keystorePassword> [-s=<salt>]
+  -e, --encryption-key=<encryptionKey> (mandatory) Encryption Key
+  -h, --help          Show this help message and exit.
+  -i, --iteration=<iterationCount> (optional) Iteration count
+  -p, --keystore-password=<keystorePassword> (mandatory) Keystore password
+  -s, --salt=<salt>   (optional) 8 character salt
+  -V, --version       Print version information and exit.
+----
+
+The two only mandatory parameters are the keystore password: `-p, --keystore-password`, and the encryption key: `-e, --encryption-key`.
+
+You can create the mask for example:
+
+[source,shell]
+----
+$ java -jar target/quarkus-app/quarkus-run.jar -p storedpass -e justsomestringhere -i 506235 -s 12344321
+----
+
+You should to see something like that at the output:
+
+[source,shell]
+----
+######################################################################################################
+Please add the following paramenters on your application.properties file, and replace the <name> value!
+The <name> will be used in the consumer to refer to this provider.
+
+quarkus.file.vault.provider.<name>.salt=12344321
+quarkus.file.vault.provider.<name>.encryption-key=justsomestringhere
+quarkus.file.vault.provider.<name>.iteration-count=506235
+quarkus.file.vault.provider.<name>.secret=4VLLc9bk+WMnQMR3ezJcpw==
+######################################################################################################
+----
+
 [[extension-configuration-reference]]
 == Extension Configuration Reference
 
