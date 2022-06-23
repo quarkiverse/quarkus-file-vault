@@ -9,6 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,7 +45,8 @@ public class FileVaultCredentialsProviderTest {
 
     @Test
     public void testGetMaskedPasswordOnly() throws Exception {
-        String masked = EncryptionUtil.encrypt("storepassword", "somearbitrarycrazystringthatdoesnotmatter");
+        String masked = EncryptionUtil.encrypt("storepassword", encode(
+                "somearbitrarycrazystringthatdoesnotmatter"));
         assertNotEquals("storepassword", masked);
         CredentialsProvider cp = createCredentialsProvider(true, false, true, masked);
         Map<String, String> creds = cp.getCredentials(FileVaultCredentialsProvider.BASE_PROVIDER_NAME + "." + PROVIDER_NAME);
@@ -89,7 +91,7 @@ public class FileVaultCredentialsProviderTest {
         }
 
         if (isSecretMasked) {
-            keyStoreProps.put("encryption-key", "somearbitrarycrazystringthatdoesnotmatter");
+            keyStoreProps.put("encryption-key", encode("somearbitrarycrazystringthatdoesnotmatter"));
         }
 
         return keyStoreProps;
@@ -105,5 +107,10 @@ public class FileVaultCredentialsProviderTest {
         config.provider = Map.of(PROVIDER_NAME, createKeystoreProps(includeAlias, isSecretMasked, secret));
         config.setAliasAsUser = setAliasAsUser;
         return new FileVaultCredentialsProvider(config);
+    }
+
+    private static String encode(String data) {
+        return Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(data.getBytes(StandardCharsets.UTF_8));
     }
 }

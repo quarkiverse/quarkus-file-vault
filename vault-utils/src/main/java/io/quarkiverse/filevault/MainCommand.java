@@ -1,5 +1,7 @@
 package io.quarkiverse.filevault;
 
+import java.nio.charset.StandardCharsets;
+
 import javax.inject.Inject;
 
 import io.quarkiverse.filevault.util.EncryptionUtil;
@@ -20,7 +22,7 @@ public class MainCommand implements Runnable, QuarkusApplication {
     @Inject
     CommandLine.IFactory factory;
 
-    @Option(names = { "-e", "--encryption-key" }, description = "(mandatory) Encryption Key", required = true)
+    @Option(names = { "-e", "--encryption-key" }, description = "(optional) Encryption Key")
     String encryptionKey;
 
     @Option(names = { "-p", "--keystore-password" }, description = "(mandatory) Keystore password", required = true)
@@ -28,6 +30,13 @@ public class MainCommand implements Runnable, QuarkusApplication {
 
     @Override
     public void run() {
+
+        if (encryptionKey == null) {
+            encryptionKey = EncryptionUtil.generateAndEncodeEncryptionKey();
+        } else {
+            encryptionKey = EncryptionUtil.encodeToString(encryptionKey.getBytes(StandardCharsets.UTF_8));
+        }
+
         String encrypted = EncryptionUtil.encrypt(keystorePassword, encryptionKey);
 
         System.out.println(

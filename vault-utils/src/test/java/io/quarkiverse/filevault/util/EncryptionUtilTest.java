@@ -22,7 +22,8 @@ public class EncryptionUtilTest {
 
     @Test
     public void testEncryptSecret() throws Exception {
-        String masked = EncryptionUtil.encrypt("storepassword", "somearbitrarycrazystringthatdoesnotmatter");
+        String masked = EncryptionUtil.encrypt("storepassword",
+                EncryptionUtil.encodeToString("somearbitrarycrazystringthatdoesnotmatter".getBytes(StandardCharsets.UTF_8)));
         assertNotEquals("storepassword", masked);
 
         String decryptedPassword = decryptPassword(masked);
