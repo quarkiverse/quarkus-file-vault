@@ -15,6 +15,7 @@ import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStore.SecretKeyEntry;
 import java.security.KeyStore.TrustedCertificateEntry;
 import java.security.cert.Certificate;
+import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,7 +102,8 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
         if (keyStoreSecret != null) {
             String encryptionKey = keyStoreProps.get("encryption-key");
             if (encryptionKey != null) {
-                keyStoreSecret = EncryptionUtil.decrypt(keyStoreSecret, encryptionKey);
+                String decodedEncryptionKey = new String(Base64.getUrlDecoder().decode(encryptionKey), StandardCharsets.UTF_8);
+                keyStoreSecret = EncryptionUtil.decrypt(keyStoreSecret, decodedEncryptionKey);
             }
         } else {
             keyStoreSecret = DEFAULT_KEY_STORE_SECRET;

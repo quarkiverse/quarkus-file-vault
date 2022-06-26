@@ -54,7 +54,8 @@ public class EncryptionUtil {
      */
     public static String encrypt(final String strToEncrypt, final String encryptionKey) {
         try {
-            SecretKeySpec secretKey = transformEncryptionKey(encryptionKey);
+            String decodedEncryptionKey = new String(Base64.getUrlDecoder().decode(encryptionKey), StandardCharsets.UTF_8);
+            SecretKeySpec secretKey = transformEncryptionKey(decodedEncryptionKey);
 
             Cipher cipher = Cipher.getInstance(ENC_ALGORITHM);
             byte[] iv = new byte[12];

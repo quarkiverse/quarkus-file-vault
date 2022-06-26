@@ -30,12 +30,13 @@ public class EncryptionUtil {
 
     /**
      * @param strToEncrypt the string to encrypt
-     * @param encryptionKey the encryption key
+     * @param encryptionKey the encryption key in Base64URL encoded format
      * @return the encrypted value
      */
     public static String encrypt(final String strToEncrypt, final String encryptionKey) {
         try {
-            SecretKeySpec secretKey = transformEncryptionKey(encryptionKey);
+            String decodedEncryptionKey = new String(Base64.getUrlDecoder().decode(encryptionKey), StandardCharsets.UTF_8);
+            SecretKeySpec secretKey = transformEncryptionKey(decodedEncryptionKey);
             return encrypt(strToEncrypt, secretKey);
         } catch (Exception e) {
             LOGGER.error("Error while encrypting: " + e.toString());
@@ -62,11 +63,15 @@ public class EncryptionUtil {
             message.put(iv);
             message.put(encrypted);
 
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(message.array());
+            return encodeToString(message.array());
         } catch (Exception e) {
             LOGGER.error("Error while encrypting: " + e.toString());
         }
         return null;
+    }
+
+    public static String encodeToString(byte[] data) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(data);
     }
 
     /**
@@ -84,11 +89,15 @@ public class EncryptionUtil {
         return null;
     }
 
+    public static String generateAndEncodeEncryptionKey() {
+        return encodeToString(generateEncryptionKey().getEncoded());
+    }
+
     public static SecretKey generateEncryptionKey() {
         try {
             return KeyGenerator.getInstance("AES").generateKey();
         } catch (Exception e) {
-            LOGGER.error("Error while transforming the encryption key: " + e.toString());
+            LOGGER.error("Error while generating the encryption key: " + e.toString());
         }
         return null;
     }

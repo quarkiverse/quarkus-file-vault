@@ -21,14 +21,16 @@ mvn clean install
 ```
 $ java -jar target/quarkus-app/quarkus-run.jar --help
 Usage: Encrypt Secret Util [-hV] -e=<encryptionKey>
-  -e, --encryption-key=<encryptionKey> (mandatory) Encryption Key
+  -e, --encryption-key=<encryptionKey> Encryption Key
   -h, --help          Show this help message and exit.
   -p, --keystore-password=<keystorePassword> (mandatory) Keystore password
   -V, --version       Print version information and exit.
 ```
 
-The two mandatory parameters are the keystore password: `-p, --keystore-password`, and the encryption key: `-e, --encryption-key`.
-The encryption ley must be at least 16 characters long.
+The only mandatory parameter is the keystore password: `-p, --keystore-password`.
+
+If the encryption key is provided then it must be at least 16 characters long.
+If the encryption key is not provided then it will be auto-generated instead.
 
 You can encrypt the keystore password like this:
 
