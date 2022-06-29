@@ -36,8 +36,6 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
     static String CERTIFICATE_PROPERTY = "certificate";
 
     private static String DEFAULT_KEY_STORE_FILE = "passwords.p12";
-    private static String DEFAULT_KEY_STORE_SECRET = "secret";
-    private static String DEFAULT_KEY_STORE_ALIAS = "user";
 
     private static final Logger LOGGER = Logger.getLogger(FileVaultCredentialsProvider.class.getName());
 
@@ -48,7 +46,9 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
     public FileVaultCredentialsProvider(FileVaultConfig config) {
         for (Map.Entry<String, Map<String, String>> store : config.provider.entrySet()) {
             storeProperties.put(store.getKey(), readKeyStore(store.getValue()));
-            defaultAliases.put(store.getKey(), store.getValue().getOrDefault("alias", DEFAULT_KEY_STORE_ALIAS));
+            if (store.getValue().containsKey("alias")) {
+                defaultAliases.put(store.getKey(), store.getValue().get("alias"));
+            }
         }
         this.setAliasAsUser = config.setAliasAsUser;
     }
@@ -79,7 +79,11 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
 
         String keyStoreAlias = nameParts.length == 6 ? nameParts[5] : defaultAliases.get(keyStoreName);
 
-        if (keyStoreProperties.containsKey(keyStoreAlias)) {
+        if (keyStoreAlias == null) {
+            for (Map.Entry<String, KeyStoreEntry> storeEntry : keyStoreProperties.entrySet()) {
+                credProviderProperties.put(storeEntry.getKey(), storeEntry.getValue().value);
+            }
+        } else if (keyStoreProperties.containsKey(keyStoreAlias)) {
             KeyStoreEntry entry = keyStoreProperties.get(keyStoreAlias);
             String property = entry.cert ? CERTIFICATE_PROPERTY : PASSWORD_PROPERTY_NAME;
             credProviderProperties.put(property, entry.value);
@@ -106,7 +110,8 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
                 keyStoreSecret = EncryptionUtil.decrypt(keyStoreSecret, decodedEncryptionKey);
             }
         } else {
-            keyStoreSecret = DEFAULT_KEY_STORE_SECRET;
+            LOGGER.errorf("Keystore %s secret is not configured", keyStoreFile);
+            throw new RuntimeException();
         }
 
         URL keyStoreFileUrl = null;

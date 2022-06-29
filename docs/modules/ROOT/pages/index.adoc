@@ -83,6 +83,8 @@ This is way you can refer to the same keystore but use a different alias each ti
 
 However, you can choose for only a `password` property be returned with `quarkus.file.vault.set-alias-as-user=false`. In this case you will need to configure a username with the extension specific property, for example, when working with `Agroal` you can use `quarkus.datasource.username`.
 
+Finally, if a keystore alias is not set in `application.properties` (for example, `quarkus.file.vault.provider.db1.alias=quarkus_test`) and is not encoded in the credentials provider name (for example, `quarkus.datasource.credentials-provider=quarkus.file.vault.provider.db1.quarkus_test`) then the provider will return all the keystore entries.
+
 == Protecting the keystore passwords.
 
 If you need to avoid setting a keystore password in `application.properties` then you can use a custom `ConfigSource`, for example:
@@ -122,6 +124,9 @@ add `org.eclipse.microprofile.config.spi.ConfigSource` service provider entry li
 quarkus.file.vault.provider.db1.path=dbpasswords.p12
 quarkus.file.vault.provider.db1.secret=${db1.storepassword}
 ----
+
+Please note that in this example, hardcoding a keystore password such as `db1.storepassword` in `KeyStoreConfigSource` is only done to simplify the documentation.
+In real world applications, custom `ConfigSource` implementations will read it from a DB or other secure storage.
 
 == Using FileVaultCredentialsProvider directly
 

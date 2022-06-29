@@ -35,6 +35,15 @@ public class FileVaultCredentialsProviderTest {
     }
 
     @Test
+    public void testGetAllCredentials() throws Exception {
+        CredentialsProvider cp = createCredentialsProvider(false, false);
+        Map<String, String> creds = cp.getCredentials(FileVaultCredentialsProvider.BASE_PROVIDER_NAME + "." + PROVIDER_NAME);
+        assertEquals(2, creds.size());
+        assertEquals(STORED_PASSWORD, creds.get(KEY_ALIAS));
+        verifyCertificate(creds.get(CERTIFICATE_ALIAS));
+    }
+
+    @Test
     public void testGetPasswordOnly() throws Exception {
         CredentialsProvider cp = createCredentialsProvider(true, false);
         Map<String, String> creds = cp.getCredentials(FileVaultCredentialsProvider.BASE_PROVIDER_NAME + "." + PROVIDER_NAME);
@@ -74,11 +83,15 @@ public class FileVaultCredentialsProviderTest {
         assertNull(creds.get(CredentialsProvider.USER_PROPERTY_NAME));
         assertNull(creds.get(CredentialsProvider.PASSWORD_PROPERTY_NAME));
 
-        String derEncodedCert = creds.get(FileVaultCredentialsProvider.CERTIFICATE_PROPERTY);
+        verifyCertificate(creds.get(FileVaultCredentialsProvider.CERTIFICATE_PROPERTY));
+    }
+
+    private void verifyCertificate(String derEncodedCert) throws Exception {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         X509Certificate cert = (X509Certificate) cf
                 .generateCertificate(new ByteArrayInputStream(derEncodedCert.getBytes(StandardCharsets.ISO_8859_1)));
         assertTrue(cert.getSubjectX500Principal().getName().startsWith("CN=Quarkus,OU=Quarkus,O=Quarkus"));
+
     }
 
     private Map<String, String> createKeystoreProps(boolean includeAlias, boolean isSecretMasked, String secret) {
