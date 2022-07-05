@@ -21,7 +21,7 @@ public class FileVaultConfig {
      * If this property is enabled then {@linkplain FileVaultCredentialsProvider} will set the alias as a 'user' property
      * which can be recognized by 'quarkus-agroal' and other extensions which use {@linkplain CredentialsProvider}
      * to prepare the authentication properties.
-     * 
+     *
      * Disable this property if you'd like to use a property such as 'quarkus.datasource.username' to configure a username,
      * when the username and keystore alias values are different.
      */

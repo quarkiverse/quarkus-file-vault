@@ -12,7 +12,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
 /**
- * 
+ *
  * @author pesilva@redhat.com
  *
  */
