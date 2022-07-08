@@ -39,6 +39,11 @@
         <artifactId>quarkus-file-vault</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.file-vault</groupId>
+        <artifactId>quarkus-file-vault-test-config-source</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>
@@ -66,6 +71,7 @@
         </property>
       </activation>
       <modules>
+        <module>test-config-source</module>
         <module>integration-tests</module>
       </modules>
     </profile>
