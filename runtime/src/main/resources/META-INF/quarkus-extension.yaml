@@ -9,7 +9,7 @@ metadata:
     - "password"
   categories:
     - "security"
-  status: "experimental"
+  status: "preview"
   config:
     - "quarkus.file.vault."
  
