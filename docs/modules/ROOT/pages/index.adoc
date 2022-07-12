@@ -85,49 +85,6 @@ However, you can choose for only a `password` property be returned with `quarkus
 
 Finally, if a keystore alias is not set in `application.properties` (for example, `quarkus.file.vault.provider.db1.alias=quarkus_test`) and is not encoded in the credentials provider name (for example, `quarkus.datasource.credentials-provider=quarkus.file.vault.provider.db1.quarkus_test`) then the provider will return all the keystore entries.
 
-== Protecting the keystore passwords.
-
-If you need to avoid setting a keystore password in `application.properties` then you can use a custom `ConfigSource`, for example:
-
-[source,java]
-----
-package io.quarkiverse.filevault.it;
-
-import java.util.Set;
-
-import org.eclipse.microprofile.config.spi.ConfigSource;
-
-public class KeyStoreConfigSource implements ConfigSource {
-
-    @Override
-    public Set<String> getPropertyNames() {
-        return Set.of("db1.storepassword");
-    }
-
-    @Override
-    public String getValue(String propertyName) {
-        return "db1.storepassword".equals(propertyName) ? "storepassword" : null;
-    }
-
-    @Override
-    public String getName() {
-        return "file-vault-config-source";
-    }
-
-}
-----
-
-add `org.eclipse.microprofile.config.spi.ConfigSource` service provider entry listing `io.quarkiverse.filevault.it.KeyStoreConfigSource` to `META-INF/services` and then refer to the keystore password like this:
-
-[source,properties]
-----
-quarkus.file.vault.provider.db1.path=dbpasswords.p12
-quarkus.file.vault.provider.db1.secret=${db1.storepassword}
-----
-
-Please note that in this example, hardcoding a keystore password such as `db1.storepassword` in `KeyStoreConfigSource` is only done to simplify the documentation.
-In real world applications, custom `ConfigSource` implementations will read it from a DB or other secure storage.
-
 == Using FileVaultCredentialsProvider directly
 
 You can access this `CredentialsProvider` like this from your code:
@@ -169,11 +126,59 @@ X509Certificate cert = (X509Certificate) cf
    .generateCertificate(new ByteArrayInputStream(encodedCert.getBytes(StandardCharsets.ISO_8859_1)));
 ---- 
 
-== ConfigSource
+== Protecting the keystore passwords.
 
-Please remember that if necessary you can always use a custom `org.eclipse.microprofile.config.spi.ConfigSource` implementation to complement the functionality of `File Vault`.
+You need to specify a keystore password in `application.properties` for Quarkus File Vault be able to extract secrets from the keystore.
+However this keystore password is a sensitive value and therefore you should consider how to minimize a risk of leaking it and how to protect it.
 
-== Masking Keystore Password
+One important thing you should be aware of is that leaking this password does not necessarily mean the actual secrets stored in the keystore will also be leaked since an unauthorized person will also need to access the actual keystore file. Restricting an access to the keystore file to a limited number of identities and having Quarkus processes impersonating one of these identities will make it harder for anyone outside of this group access the keystore. The keystore password can be set as an environment variable and this password should be periodically changed to limit a window during which an attacker can try to get to the keystore.
+
+=== Use ConfigSource
+
+However if you do need to avoid setting a keystore password in `application.properties` then you can use a custom MicroProfile `ConfigSource`, for example.
+
+[source,java]
+----
+package io.quarkiverse.filevault.it;
+
+import java.util.Set;
+
+import org.eclipse.microprofile.config.spi.ConfigSource;
+
+public class KeyStoreConfigSource implements ConfigSource {
+
+    @Override
+    public Set<String> getPropertyNames() {
+        return Set.of("db1.storepassword");
+    }
+
+    @Override
+    public String getValue(String propertyName) {
+        return "db1.storepassword".equals(propertyName) ? "storepassword" : null;
+    }
+
+    @Override
+    public String getName() {
+        return "file-vault-config-source";
+    }
+
+}
+----
+
+add `org.eclipse.microprofile.config.spi.ConfigSource` service provider entry listing `io.quarkiverse.filevault.it.KeyStoreConfigSource` to `META-INF/services` and then refer to the keystore password like this:
+
+[source,properties]
+----
+quarkus.file.vault.provider.db1.path=dbpasswords.p12
+quarkus.file.vault.provider.db1.secret=${db1.storepassword}
+----
+
+Please note that in this example, hardcoding a keystore password such as `db1.storepassword` in `KeyStoreConfigSource` is only done to simplify the documentation.
+In real world applications, custom `ConfigSource` implementations will read it from a DB or other secure storage.
+
+For example, link:https://quarkiverse.github.io/quarkiverse-docs/quarkus-vault/dev/index.html[Quarkus Vault] extension provides a `ConfigSource` which can fetch secrets from a `HashiCorp Vault`.
+
+=== Mask Keystore Password
 
 If you need to mask a keystore password (`quarkus.file.vault.provider.<name>.secret`) you will need to build and package the link:https://github.com/quarkiverse/quarkus-file-vault/tree/main/vault-utils[Vault Utils] project.
 
@@ -214,9 +219,15 @@ Please add the following paramenters on your application.properties file, and re
 The <name> will be used in the consumer to refer to this provider.
 
 quarkus.file.vault.provider.<name>.encryption-key=justsomestringhere
-quarkus.file.vault.provider.<name>.secret=4VLLc9bk+WMnQMR3ezJcpw==
+quarkus.file.vault.provider.<name>.secret=4VLLc9bk+WMnQMR3ezJcpw
 ######################################################################################################
 ----
+
+Note even though you now have the masked keystore password (`quarkus.file.vault.provider.<name>.secret=4VLLc9bk+WMnQMR3ezJcpw`), the encryption key which was used to mask it remains in a clear text so it should be protected similarly to how an unmasked keystore password should be, for example, using a `ConfigSource` or environment variables. As such the main advantage of masking the password is to introduce an extra level of indirection to make it more complex to get to the keystore password itself.
+
+== HashiCorp Vault
+
+link:https://quarkiverse.github.io/quarkiverse-docs/quarkus-vault/dev/index.html[Quarkus Vault] extension can be used as a `ConfigSource` with `Quarkus File Vault` to protect the keystore passwords, but it can also act as an alternative to Quarkus File Vault as a `CredentialsProvider` implementation.
 
 [[extension-configuration-reference]]
 == Extension Configuration Reference
