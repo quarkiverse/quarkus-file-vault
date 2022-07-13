@@ -40,16 +40,15 @@ public class MainCommand implements Runnable, QuarkusApplication {
         String encrypted = EncryptionUtil.encrypt(keystorePassword, encryptionKey);
 
         System.out.println(
-                "######################################################################################################");
+                "###########################################################################################################");
         System.out.println(
-                "Please, add the following paramenters on your application.properties file, and replace the <name> value!"
-                        + "\nThe <name> will be used in the consumer to refer to this provider.\n");
+                "Please, add the following parameters to your application.properties file, and replace the <keystore-name> !");
 
-        System.out.println("quarkus.file.vault.provider.<name>.encryption-key=" + encryptionKey);
-        System.out.println("quarkus.file.vault.provider.<name>.secret=" + encrypted);
+        System.out.println("quarkus.file.vault.provider.<keystore-name>.encryption-key=" + encryptionKey);
+        System.out.println("quarkus.file.vault.provider.<keystore-name>.secret=" + encrypted);
 
         System.out.println(
-                "######################################################################################################");
+                "###########################################################################################################");
     }
 
     @Override
