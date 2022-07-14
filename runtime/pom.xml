@@ -8,6 +8,7 @@
   </parent>
   <artifactId>quarkus-file-vault</artifactId>
   <name>Quarkus - File Vault - Runtime</name>
+  <description>Credentials Provider which extracts secrets from Java KeyStore</description>
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
