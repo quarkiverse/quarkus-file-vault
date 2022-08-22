@@ -12,8 +12,8 @@
   <packaging>pom</packaging>
   <name>Quarkus - File Vault - Parent</name>
   <modules>
-    <module>deployment</module>
-    <module>runtime</module>
+    <module>file-vault-credentials-provider</module>
+    <module>file-vault-config-source</module>
     <module>vault-utils</module>
   </modules>
   <properties>
@@ -34,11 +34,6 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      <dependency>
-        <groupId>io.quarkiverse.file-vault</groupId>
-        <artifactId>quarkus-file-vault</artifactId>
-        <version>${project.version}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
   <build>
@@ -56,18 +51,4 @@
       </plugins>
     </pluginManagement>
   </build>
-  <profiles>
-    <profile>
-      <id>it</id>
-      <activation>
-        <property>
-          <name>performRelease</name>
-          <value>!true</value>
-        </property>
-      </activation>
-      <modules>
-        <module>integration-tests</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>
