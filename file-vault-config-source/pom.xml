@@ -8,9 +8,9 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>io.quarkiverse.file-vault</groupId>
-  <artifactId>quarkus-file-vault-credentials-provider-parent</artifactId>
+  <artifactId>quarkus-file-vault-config-source-parent</artifactId>
   <packaging>pom</packaging>
-  <name>Quarkus - File Vault Credentials Provider - Parent</name>
+  <name>Quarkus - File Vault Config Source - Parent</name>
   <modules>
     <module>deployment</module>
     <module>runtime</module>
@@ -18,8 +18,15 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-bom</artifactId>
+        <version>${quarkus.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
         <groupId>io.quarkiverse.file-vault</groupId>
-        <artifactId>quarkus-file-vault</artifactId>
+        <artifactId>quarkus-file-vault-config-source</artifactId>
         <version>${project.version}</version>
       </dependency>
     </dependencies>
