@@ -3,45 +3,37 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.quarkiverse.file-vault</groupId>
-    <artifactId>quarkus-file-vault-parent</artifactId>
+    <artifactId>quarkus-file-vault-credentials-provider-parent</artifactId>
     <version>999-SNAPSHOT</version>
   </parent>
-  <artifactId>quarkus-file-vault</artifactId>
-  <name>Quarkus - File Vault - Runtime</name>
-  <description>Credentials Provider which extracts secrets from Java KeyStore</description>
+  <artifactId>quarkus-file-vault-deployment</artifactId>
+  <name>Quarkus - File Vault Credentials Provider - Deployment</name>
   <dependencies>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-arc</artifactId>
+      <artifactId>quarkus-arc-deployment</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkiverse.file-vault</groupId>
+      <artifactId>quarkus-file-vault</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-credentials</artifactId>
+      <artifactId>quarkus-credentials-deployment</artifactId>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit5-internal</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>rest-assured</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
-      <plugin>
-        <groupId>io.quarkus</groupId>
-        <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
-        <version>${quarkus.version}</version>
-        <executions>
-          <execution>
-            <phase>compile</phase>
-            <goals>
-              <goal>extension-descriptor</goal>
-            </goals>
-            <configuration>
-              <deployment>${project.groupId}:${project.artifactId}-deployment:${project.version}</deployment>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
