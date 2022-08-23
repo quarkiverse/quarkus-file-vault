@@ -75,6 +75,31 @@ public class EncryptionUtil {
     }
 
     /**
+     * @param strToDecrypt the string to decrypt
+     * @param encryptionKey the encryption key
+     * @return the decrypted value
+     */
+    public static String decrypt(final String strToDecrypt, final String encryptionKey) {
+        try {
+            SecretKeySpec secretKey = transformEncryptionKey(encryptionKey);
+
+            Cipher cipher = Cipher.getInstance(EncryptionUtil.ENC_ALGORITHM);
+            ByteBuffer byteBuffer = ByteBuffer
+                    .wrap(Base64.getUrlDecoder().decode(strToDecrypt.getBytes(StandardCharsets.UTF_8)));
+            int ivLength = byteBuffer.get();
+            byte[] iv = new byte[ivLength];
+            byteBuffer.get(iv);
+            byte[] encrypted = new byte[byteBuffer.remaining()];
+            byteBuffer.get(encrypted);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(EncryptionUtil.ENC_TAG_LENGTH, iv));
+            return new String(cipher.doFinal(encrypted), StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            LOGGER.error("Error while decrypting: " + e.toString());
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      * @param encryptionKey the encryption key
      * @return the transformed encryption key
      */

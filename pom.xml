@@ -12,6 +12,7 @@
   <packaging>pom</packaging>
   <name>Quarkus - File Vault - Parent</name>
   <modules>
+    <module>file-vault-common</module>
     <module>file-vault-credentials-provider</module>
     <module>file-vault-config-source</module>
     <module>vault-utils</module>
@@ -33,6 +34,11 @@
         <version>${quarkus.version}</version>
         <type>pom</type>
         <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkiverse.file-vault</groupId>
+        <artifactId>quarkus-file-vault-common</artifactId>
+        <version>${project.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

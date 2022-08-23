@@ -26,7 +26,7 @@ import javax.inject.Named;
 
 import org.jboss.logging.Logger;
 
-import io.quarkiverse.filevault.runtime.encrypt.EncryptionUtil;
+import io.quarkiverse.filevault.util.EncryptionUtil;
 import io.quarkus.credentials.CredentialsProvider;
 
 @Named("quarkus.file.vault")
