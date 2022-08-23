@@ -15,7 +15,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkiverse.filevault.runtime.encrypt.EncryptionUtil;
+import io.quarkiverse.filevault.util.EncryptionUtil;
 import io.quarkus.credentials.CredentialsProvider;
 
 public class FileVaultCredentialsProviderTest {

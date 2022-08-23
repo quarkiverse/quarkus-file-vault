@@ -26,7 +26,7 @@ import javax.crypto.SecretKey;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.jboss.logging.Logger;
 
-import io.quarkiverse.filevault.configsource.runtime.encrypt.EncryptionUtil;
+import io.quarkiverse.filevault.util.EncryptionUtil;
 
 public class FileVaultConfigSource implements ConfigSource {
     private static final Logger LOGGER = Logger.getLogger(FileVaultConfigSource.class.getName());

@@ -15,6 +15,10 @@
       <artifactId>quarkus-arc</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.quarkiverse.file-vault</groupId>
+      <artifactId>quarkus-file-vault-common</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-credentials</artifactId>
     </dependency>
