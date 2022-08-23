@@ -29,19 +29,9 @@ public class FileVaultConfigSource implements ConfigSource {
         return ordinal;
     }
 
-    /**
-     * Always return an empty map to protect from accidental properties logging
-     *
-     * @return empty map
-     */
-    @Override
-    public Map<String, String> getProperties() {
-        return Map.of();
-    }
-
     @Override
     public Set<String> getPropertyNames() {
-        return Set.of();
+        return Set.copyOf(storeProperties.keySet());
     }
 
     @Override
