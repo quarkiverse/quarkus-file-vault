@@ -3,16 +3,25 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-_Credentials Provider which extracts secrets from Java KeyStore_
+_Credentials Provider and ConfigSource which extracts secrets from Java KeyStore_
 
-This project provides Quarkus [CredentialsProvider](https://quarkus.io/guides/credentials-provider) which extracts sensitive data such as passwords from Java KeyStore.
+This project provides Quarkus [CredentialsProvider](https://quarkus.io/guides/credentials-provider) and MicroProfile [ConfigSource](https://quarkus.io/guides/config-extending-support#custom-config-source) which extracts sensitive data such as passwords from Java KeyStore.
 
-To get started, add the dependency:
+To get started with using `File Vault` as `CredentialsProvider`, add the dependency:
 
 ```xml
 <dependency>
     <groupId>io.quarkiverse.file-vault</groupId>
     <artifactId>quarkus-file-vault</artifactId>
+</dependency>
+```
+
+To get started with using `File Vault` as `ConfigSource`, add the dependency:
+
+```xml
+<dependency>
+    <groupId>io.quarkiverse.file-vault</groupId>
+    <artifactId>quarkus-file-vault-config-source</artifactId>
 </dependency>
 ```
 

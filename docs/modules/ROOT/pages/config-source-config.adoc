@@ -1,0 +1,38 @@
+//
+// This content is generated using mvn compile and copied manually to here
+//
+[.configuration-legend]
+icon:lock[title=Fixed at build time] Configuration property fixed at build time - All other configuration properties are overridable at runtime
+[.configuration-reference.searchable, cols="80,.^10,.^10"]
+|===
+
+h|[[quarkus-file-vault-config-source_configuration]]link:#quarkus-file-vault-config-source_configuration[Configuration property]
+
+h|Type
+h|Default
+
+a| [[quarkus-file-vault-config-source_quarkus.file.vault-config-source.keystore-path]]`link:#quarkus-file-vault-config-source_quarkus.file-vault-config-source.keystore-path[quarkus.file.vault-config-source.keystore-path]`
+
+[.description]
+--
+Keystore path.
+--|String
+|
+
+a| [[quarkus-file-vault-config-source_quarkus.file.vault-config-source.keystore-secret]]`link:#quarkus-file-vault-config-source_quarkus.file-vault-config-source.keystore-secret[quarkus.file.vault-config-source.keystore-secret]`
+
+[.description]
+--
+Keystore secret.
+--|String
+|
+
+a| [[quarkus-file-vault-config-source_quarkus.file.vault-config-source.encryption-key]]`link:#quarkus-file-vault-config-source_quarkus.file-vault-config-source.encryption-key[quarkus.file.vault-config-source.encryption-key]`
+
+[.description]
+--
+Encryption key which was used to mask the keystore secret.
+--|String
+|
+
+|===
