@@ -3,14 +3,13 @@
 
 == Introduction
 
-This project provides Quarkus link:https://quarkus.io/guides/credentials-provider[CredentialsProvider] which extracts passwords and other sensitive data from Java `KeyStore`.
+This project provides Quarkus link:https://quarkus.io/guides/credentials-provider[CredentialsProvider] and MicroProfile [ConfigSource](https://quarkus.io/guides/config-extending-support#custom-config-source) which extracts passwords and other sensitive data from Java `KeyStore`.
 
 Java `KeyStore` is used as a file-based `Vault`. Sensitive data can be imported to and securely stored in this `Vault` as Java `SecretKey` values. Imported certificates are also supported.
 
 == Installation
 
-If you want to use this extension, you need to add the `io.quarkiverse.file-vault:quarkus-file-vault` extension first.
-In your `pom.xml` file, add:
+If you would like to use `File Vault` as `CredentialsProvider` then add the `io.quarkiverse.file-vault:quarkus-file-vault` dependency in your `pom.xml`:
 
 [source,xml]
 ----
@@ -19,6 +18,17 @@ In your `pom.xml` file, add:
     <artifactId>quarkus-file-vault</artifactId>
 </dependency>
 ----
+
+If you would like to use `File Vault` as `ConfigSource` then add the `io.quarkiverse.file-vault:quarkus-file-vault-config-source` dependency in your `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+    <groupId>io.quarkiverse.file-vault</groupId>
+    <artifactId>quarkus-file-vault-config-source</artifactId>
+</dependency>
+----
+
 
 == Getting Started
 
@@ -31,9 +41,9 @@ keytool -importpass -alias quarkus_test -keystore dbpasswords.p12 -storepass sto
 
 This command creates a keystore `dbpasswords.p12` with a secret key whose alias is `quarkus_test`.
 
-== How to use the extension.
+== Use File Vault CredentialsProvider
 
-Once you have one or more keystore prepared you can use it with Quarkus extensions which integrate with `CredentialsProvider`.
+Once you have one or more keystore prepared you can use `File Vault` as `CredentialsProvider` with Quarkus extensions which integrate with `CredentialsProvider`.
 
 For example, here is how you can configure it with `Agroal`:
 
@@ -85,7 +95,7 @@ However, you can choose for only a `password` property be returned with `quarkus
 
 Finally, if a keystore alias is not set in `application.properties` (for example, `quarkus.file.vault.provider.db1.alias=quarkus_test`) and is not encoded in the credentials provider name (for example, `quarkus.datasource.credentials-provider=quarkus.file.vault.provider.db1.quarkus_test`) then the provider will return all the keystore entries.
 
-== Using FileVaultCredentialsProvider directly
+=== Use FileVaultCredentialsProvider directly
 
 You can access this `CredentialsProvider` like this from your code:
 
@@ -126,7 +136,29 @@ X509Certificate cert = (X509Certificate) cf
    .generateCertificate(new ByteArrayInputStream(encodedCert.getBytes(StandardCharsets.ISO_8859_1)));
 ---- 
 
-== Protecting the keystore passwords.
+== Use File Vault ConfigSource
+
+Once you have a keystore prepared you can use `File Vault` as `ConfigSource`.
+
+For example, here is how you can configure it with `Agroal`:
+
+[source,properties]
+----
+quarkus.datasource.db-kind=postgresql
+quarkus.datasource.jdbc.url=jdbc:postgresql://localhost/quarkus_test
+quarkus.datasource.username=quarkus_test
+quarkus.datasource.password=${quarkus_test}
+
+quarkus.file.vault-config-source.keystore-path=dbpasswords.p12
+quarkus.file.vault-config-source.keystore-secret=storepassword
+
+quarkus.hibernate-orm.database.generation=drop-and-create
+quarkus.hibernate-orm.log.sql=true
+quarkus.hibernate-orm.sql-load-script=import.sql
+----
+
+
+== Protect keystore passwords.
 
 You need to specify a keystore password in `application.properties` for Quarkus File Vault be able to extract secrets from the keystore.
 However this keystore password is a sensitive value and therefore you should consider how to minimize a risk of leaking it and how to protect it.
@@ -165,12 +197,22 @@ public class KeyStoreConfigSource implements ConfigSource {
 }
 ----
 
-add `org.eclipse.microprofile.config.spi.ConfigSource` service provider entry listing `io.quarkiverse.filevault.it.KeyStoreConfigSource` to `META-INF/services` and then refer to the keystore password like this:
+add `org.eclipse.microprofile.config.spi.ConfigSource` service provider entry listing `io.quarkiverse.filevault.it.KeyStoreConfigSource` to `META-INF/services`.
+
+Next, refer to the keystore password like this if you use `File Vault` as `CredentialsProvider`:
 
 [source,properties]
 ----
 quarkus.file.vault.provider.db1.path=dbpasswords.p12
 quarkus.file.vault.provider.db1.secret=${db1.storepassword}
+----
+
+or refer to the keystore password like this if you use `File Vault` as `ConfigSource`:
+
+[source,properties]
+----
+quarkus.file.vault-config-source.keystore-path=dbpasswords.p12
+quarkus.file.vault-config-source.keystore-secret=${db1.storepassword}
 ----
 
 Please note that in this example, hardcoding a keystore password such as `db1.storepassword` in `KeyStoreConfigSource` is only done to simplify the documentation.
@@ -210,25 +252,36 @@ Here is how you can mask a keystore password:
 $ java -jar target/quarkus-app/quarkus-run.jar -p storedpass -e justsomestringhere
 ----
 
-You should to see something like that at the output:
+You should see something like this at the output:
 
 [source,shell]
 ----
-##########################################################################################################
-Please add the following parameters to your application.properties file, and replace the <keystore-name> !
+#######################################################################################################################################################
+Please add the following parameters to application.properties if you use File Vault as CredentialsProvider and replace the <keystore-name>:
 
 quarkus.file.vault.provider.<name>.encryption-key=justsomestringhere
 quarkus.file.vault.provider.<name>.secret=4VLLc9bk+WMnQMR3ezJcpw
-##########################################################################################################
+
+Please add the following parameters to application.properties if you use File Vault as ConfigSource:
+
+quarkus.file.vault-config-source.encryption-key=justsomestringhere
+quarkus.file.vault-config-source.keystore-secret=4VLLc9bk+WMnQMR3ezJcpw
+########################################################################################################################################################
 ----
 
-Note even though you now have the masked keystore password (`quarkus.file.vault.provider.<name>.secret=4VLLc9bk+WMnQMR3ezJcpw`), the encryption key which was used to mask it remains in a clear text so it should be protected similarly to how an unmasked keystore password should be, for example, using a `ConfigSource` or environment variables. As such the main advantage of masking the password is to introduce an extra level of indirection to make it more complex to get to the keystore password itself.
+Note even though you now have the keystore password `storedpass` masked as `4VLLc9bk+WMnQMR3ezJcpw`, the encryption key which was used to mask it remains in a clear text so it should be protected similarly to how an unmasked keystore password should be, for example, using a `ConfigSource` or environment variables. As such the main advantage of masking the password is to introduce an extra level of indirection to make it more complex to get to the keystore password itself.
 
 == HashiCorp Vault
 
 link:https://quarkiverse.github.io/quarkiverse-docs/quarkus-vault/dev/index.html[Quarkus Vault] extension can be used as a `ConfigSource` with `Quarkus File Vault` to protect the keystore passwords, but it can also act as an alternative to Quarkus File Vault as a `CredentialsProvider` implementation.
 
 [[extension-configuration-reference]]
-== Extension Configuration Reference
+== Configuration Reference
+
+=== File Vault CredentialsProvider
 
 include::config.adoc[leveloffset=+1, opts=optional]
+
+=== File Vault ConfigSource
+
+include::config-source-config.adoc[leveloffset=+1, opts=optional]
