@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.quarkiverse.file-vault</groupId>
     <artifactId>quarkus-file-vault-credentials-provider-parent</artifactId>
-    <version>0.8.0</version>
+    <version>999-SNAPSHOT</version>
   </parent>
   <artifactId>quarkus-file-vault</artifactId>
   <name>Quarkus - File Vault Credentials Provider - Runtime</name>
