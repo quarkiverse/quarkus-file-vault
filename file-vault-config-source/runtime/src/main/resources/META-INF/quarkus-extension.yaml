@@ -1,0 +1,15 @@
+---
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
+name: "File Vault Config Source"
+metadata:
+  keywords:
+    - "vault"
+    - "keystore"
+    - "secret"
+    - "password"
+  categories:
+    - "security"
+  status: "preview"
+  config:
+    - "quarkus.file.vault-config-source."
+ 

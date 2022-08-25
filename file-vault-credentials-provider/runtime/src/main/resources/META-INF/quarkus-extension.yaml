@@ -1,0 +1,15 @@
+---
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
+name: "File Vault Credentials Provider"
+metadata:
+  keywords:
+    - "vault"
+    - "keystore"
+    - "secret"
+    - "password"
+  categories:
+    - "security"
+  status: "preview"
+  config:
+    - "quarkus.file.vault."
+ 
