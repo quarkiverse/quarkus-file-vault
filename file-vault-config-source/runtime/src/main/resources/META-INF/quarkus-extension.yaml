@@ -12,4 +12,5 @@ metadata:
   status: "preview"
   config:
     - "quarkus.file.vault-config-source."
- 
+  cli-plugins:
+   - "${project.groupId}:quarkus-file-vault-cli:${project.version}" 
