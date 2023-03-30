@@ -222,7 +222,37 @@ For example, link:https://quarkiverse.github.io/quarkiverse-docs/quarkus-vault/d
 
 === Mask Keystore Password
 
-If you need to mask a keystore password (`quarkus.file.vault.provider.<name>.secret`) you will need to build and package the link:https://github.com/quarkiverse/quarkus-file-vault/tree/main/vault-utils[Vault Utils] project.
+If you need to mask a keystore password you can make use of the link:https://github.com/quarkiverse/quarkus-file-vault/tree/main/file-vault-cli[File Vault CLI] project.
+The CLI can be added either as a CLI plugin, or by building it and running it locally.
+
+==== As a CLI plugin
+
+All projects that include the `file-vault-config-source` or the `file-vault-credentials-provider` extension will automatically gain access to the file vault CLI.
+The CLI can then be used using the `quarkus file-valut` subcommand.
+
+[source,shell]
+----
+$ quarkus file-vault
+
+Usage: Encrypt Secret Util [-hV] [-e=<encryptionKey>] -p=<keystorePassword>
+  -e, --encryption-key=<encryptionKey> (optional) Encryption Key
+  -h, --help          Show this help message and exit.
+  -p, --keystore-password=<keystorePassword> (mandatory) Keystore password
+  -V, --version       Print version information and exit.
+
+----
+
+To add the CLI plugin explicitly (without adding any extension to your project), or to enable it globally (for all projects), you can use:
+
+[source,shell]
+----
+quarkus plug add quarkusj plug add io.quarkiverse.file-vault:quarkus-file-vault-cli:<file vault version> -d "File Vault CLI"
+----
+
+==== Building and using the CLI locally
+
+If you need to mask a keystore password (quarkus.file.vault.provider.<name>.secret) without the use of the `quarkus` binary, you can build the file vault CLI locally.
+You will need to checkout and package the link:https://github.com/quarkiverse/quarkus-file-vault/tree/main/file-vault-cli[File Vault CLI]. 
 
 [source,shell]
 ----
