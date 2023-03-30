@@ -7,8 +7,8 @@
     <version>999-SNAPSHOT</version>
   </parent>
   
-  <artifactId>quarkus-file-vault-utils</artifactId>
-  <name>Quarkus - File Vault - Vault Utils</name>
+  <artifactId>quarkus-file-vault-cli</artifactId>
+  <name>Quarkus - File Vault - CLI</name>
   
   <dependencies>
     <dependency>

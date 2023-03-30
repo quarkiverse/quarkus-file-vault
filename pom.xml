@@ -15,7 +15,7 @@
     <module>file-vault-common</module>
     <module>file-vault-credentials-provider</module>
     <module>file-vault-config-source</module>
-    <module>vault-utils</module>
+    <module>file-vault-cli</module>
   </modules>
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
