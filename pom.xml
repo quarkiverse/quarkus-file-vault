@@ -8,7 +8,7 @@
   </parent>
   <groupId>io.quarkiverse.file-vault</groupId>
   <artifactId>quarkus-file-vault-parent</artifactId>
-  <version>2.0.0</version>
+  <version>999-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Quarkus - File Vault - Parent</name>
   <modules>
@@ -57,8 +57,4 @@
       </plugins>
     </pluginManagement>
   </build>
-
-  <scm>
-    <tag>2.0.0</tag>
-  </scm>
 </project>
