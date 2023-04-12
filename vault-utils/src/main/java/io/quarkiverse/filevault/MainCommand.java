@@ -2,7 +2,7 @@ package io.quarkiverse.filevault;
 
 import java.nio.charset.StandardCharsets;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import io.quarkiverse.filevault.util.EncryptionUtil;
 import io.quarkus.runtime.QuarkusApplication;
