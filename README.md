@@ -1,4 +1,4 @@
-# Quarkus - File Vault
+# Quarkus File Vault
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
@@ -26,6 +26,13 @@ To get started with using `File Vault` as `ConfigSource`, add the dependency:
 ```
 
 For more details, check the complete [documentation](https://quarkiverse.github.io/quarkiverse-docs/quarkus-file-vault/dev/index.html).
+
+## Compatibility
+
+| Quarkus | Quarkus File Vault |
+|---------|--------------------|
+| 2.x     | 1.x                |
+| 3.x     | 2.x                |
 
 ## Contributors ✨
 
