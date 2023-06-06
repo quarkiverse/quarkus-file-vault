@@ -18,7 +18,7 @@
     <module>vault-utils</module>
   </modules>
   <scm>
-    <connection>:git:git@github.com:quarkiverse/quarkus-file-vault.git</connection>
+    <connection>scm:git:git@github.com:quarkiverse/quarkus-file-vault.git</connection>
     <developerConnection>scm:git:git@github.com:quarkiverse/quarkus-file-vault.git</developerConnection>
     <url>https://github.com/quarkiverse/quarkus-file-vault</url>
   </scm>
