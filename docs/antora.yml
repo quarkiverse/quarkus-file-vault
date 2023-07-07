@@ -1,5 +1,5 @@
 name: quarkus-file-vault
-title: Quarkus File Vault
+title: File Vault
 version: dev
 nav:
   - modules/ROOT/nav.adoc
