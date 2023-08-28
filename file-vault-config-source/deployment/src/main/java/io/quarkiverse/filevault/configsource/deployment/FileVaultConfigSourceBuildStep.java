@@ -1,12 +1,10 @@
 package io.quarkiverse.filevault.configsource.deployment;
 
-import io.quarkiverse.filevault.configsource.runtime.FileVaultBootstrapConfig;
-import io.quarkiverse.filevault.configsource.runtime.FileVaultConfigSourceRecorder;
+import io.quarkiverse.filevault.configsource.runtime.FileVaultConfigBuilder;
+import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
-import io.quarkus.deployment.annotations.ExecutionTime;
-import io.quarkus.deployment.annotations.Record;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
-import io.quarkus.deployment.builditem.RunTimeConfigurationSourceValueBuildItem;
+import io.quarkus.deployment.builditem.RunTimeConfigBuilderBuildItem;
 
 public class FileVaultConfigSourceBuildStep {
 
@@ -14,10 +12,8 @@ public class FileVaultConfigSourceBuildStep {
         return new FeatureBuildItem("file-vault-config-source");
     }
 
-    @Record(ExecutionTime.RUNTIME_INIT)
     @BuildStep
-    RunTimeConfigurationSourceValueBuildItem init(FileVaultConfigSourceRecorder recorder,
-            FileVaultBootstrapConfig fileVaultBootstrapConfig) {
-        return new RunTimeConfigurationSourceValueBuildItem(recorder.configure(fileVaultBootstrapConfig));
+    void config(BuildProducer<RunTimeConfigBuilderBuildItem> runTimeConfigBuilder) {
+        runTimeConfigBuilder.produce(new RunTimeConfigBuilderBuildItem(FileVaultConfigBuilder.class));
     }
 }
