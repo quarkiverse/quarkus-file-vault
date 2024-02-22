@@ -1,6 +1,5 @@
 package io.quarkiverse.filevault.configsource.runtime;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,13 +9,15 @@ import io.quarkiverse.filevault.util.KeyStoreUtil;
 import io.quarkiverse.filevault.util.KeyStoreUtil.KeyStoreEntry;
 
 public class FileVaultConfigSource implements ConfigSource {
-    private Map<String, KeyStoreEntry> storeProperties = new HashMap<>();
-    private int ordinal;
+    private final Map<String, KeyStoreEntry> storeProperties;
+    private final int ordinal;
 
     public FileVaultConfigSource(FileVaultBootstrapConfig config) {
-        storeProperties = KeyStoreUtil.readKeyStore(config.keystorePath.orElse(null),
-                config.keystoreSecret.orElse(null), config.encryptionKey.orElse(null));
-        ordinal = config.configOrdinal;
+        storeProperties = KeyStoreUtil.readKeyStore(
+                config.keystorePath().orElse(null),
+                config.keystoreSecret().orElse(null),
+                config.encryptionKey().orElse(null));
+        ordinal = config.configOrdinal();
     }
 
     @Override

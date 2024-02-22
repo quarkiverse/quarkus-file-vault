@@ -2,12 +2,14 @@ package io.quarkiverse.filevault.configsource.runtime;
 
 import java.util.Optional;
 
-import io.quarkus.runtime.annotations.ConfigItem;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
 
-@ConfigRoot(name = "file.vault-config-source", phase = ConfigPhase.BOOTSTRAP)
-public class FileVaultBootstrapConfig {
+@ConfigMapping(prefix = "quarkus.file.vault-config-source")
+@ConfigRoot(phase = ConfigPhase.RUN_TIME)
+public interface FileVaultBootstrapConfig {
 
     /**
      * Microprofile Config ordinal.
@@ -17,24 +19,21 @@ public class FileVaultBootstrapConfig {
      * <p>
      * The default value is higher than the file system or jar ordinals, but lower than env vars.
      */
-    @ConfigItem(defaultValue = "270")
-    public int configOrdinal;
+    @WithDefault("270")
+    int configOrdinal();
 
     /**
      * KeyStore Path.
      */
-    @ConfigItem
-    public Optional<String> keystorePath;
+    Optional<String> keystorePath();
 
     /**
      * KeyStore Secret.
      */
-    @ConfigItem
-    public Optional<String> keystoreSecret;
+    Optional<String> keystoreSecret();
 
     /**
      * KeyStore Secret Encryption Key.
      */
-    @ConfigItem
-    public Optional<String> encryptionKey;
+    Optional<String> encryptionKey();
 }
