@@ -27,7 +27,7 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
     private boolean setAliasAsUser;
 
     public FileVaultCredentialsProvider(FileVaultConfig config) {
-        for (Map.Entry<String, Map<String, String>> store : config.provider.entrySet()) {
+        for (Map.Entry<String, Map<String, String>> store : config.provider().entrySet()) {
             Map<String, String> keyStoreProps = store.getValue();
             String keyStoreFile = keyStoreProps.getOrDefault("path", DEFAULT_KEY_STORE_FILE);
             String keyStoreSecret = keyStoreProps.get("secret");
@@ -38,7 +38,7 @@ public class FileVaultCredentialsProvider implements CredentialsProvider {
                 defaultAliases.put(store.getKey(), store.getValue().get("alias"));
             }
         }
-        this.setAliasAsUser = config.setAliasAsUser;
+        this.setAliasAsUser = config.setAliasAsUser();
     }
 
     @Override

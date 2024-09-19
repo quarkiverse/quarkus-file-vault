@@ -2,18 +2,20 @@ package io.quarkiverse.filevault.runtime;
 
 import java.util.Map;
 
-import io.quarkus.runtime.annotations.ConfigItem;
+import io.quarkus.credentials.CredentialsProvider;
 import io.quarkus.runtime.annotations.ConfigPhase;
 import io.quarkus.runtime.annotations.ConfigRoot;
+import io.smallrye.config.ConfigMapping;
+import io.smallrye.config.WithDefault;
 
-@ConfigRoot(name = "file.vault", phase = ConfigPhase.RUN_TIME)
-public class FileVaultConfig {
+@ConfigMapping(prefix = "quarkus.file.vault")
+@ConfigRoot(phase = ConfigPhase.RUN_TIME)
+public interface FileVaultConfig {
 
     /**
      * Java KeyStore configuration for a specific provider such as a database.
      */
-    @ConfigItem
-    public Map<String, Map<String, String>> provider;
+    Map<String, Map<String, String>> provider();
 
     /**
      * Set the alias which is used to extract a secret from the key store as a 'user' property.
@@ -25,6 +27,6 @@ public class FileVaultConfig {
      * Disable this property if you'd like to use a property such as 'quarkus.datasource.username' to configure a username,
      * when the username and keystore alias values are different.
      */
-    @ConfigItem(defaultValue = "true")
-    public boolean setAliasAsUser;
+    @WithDefault("true")
+    boolean setAliasAsUser();
 }
