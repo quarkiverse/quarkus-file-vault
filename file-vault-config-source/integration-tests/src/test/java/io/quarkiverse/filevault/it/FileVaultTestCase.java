@@ -5,29 +5,11 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.IsNot.not;
 
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-import com.github.dockerjava.api.model.ExposedPort;
-import com.github.dockerjava.api.model.PortBinding;
-import com.github.dockerjava.api.model.Ports;
 
 import io.quarkus.test.junit.QuarkusTest;
 
-@Testcontainers
 @QuarkusTest
 public class FileVaultTestCase {
-
-    @Container
-    public static final PostgreSQLContainer DATABASE = new PostgreSQLContainer<>()
-            .withDatabaseName("quarkus_test")
-            .withUsername("quarkus_test")
-            .withPassword("quarkus_test")
-            .withExposedPorts(5432)
-            .withCreateContainerCmdModifier(cmd -> cmd
-                    .withHostName("localhost")
-                    .withPortBindings(new PortBinding(Ports.Binding.bindPort(5432), new ExposedPort(5432))));
 
     @Test
     public void testListAllFruits() {
