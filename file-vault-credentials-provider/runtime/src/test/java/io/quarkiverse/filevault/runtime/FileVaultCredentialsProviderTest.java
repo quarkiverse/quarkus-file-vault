@@ -116,9 +116,19 @@ public class FileVaultCredentialsProviderTest {
 
     private CredentialsProvider createCredentialsProvider(boolean includeAlias, boolean setAliasAsUser, boolean isSecretMasked,
             String secret) {
-        FileVaultConfig config = new FileVaultConfig();
-        config.provider = Map.of(PROVIDER_NAME, createKeystoreProps(includeAlias, isSecretMasked, secret));
-        config.setAliasAsUser = setAliasAsUser;
+        FileVaultConfig config = new FileVaultConfig() {
+
+            @Override
+            public Map<String, Map<String, String>> provider() {
+                return Map.of(PROVIDER_NAME, createKeystoreProps(includeAlias, isSecretMasked, secret));
+            }
+
+            @Override
+            public boolean setAliasAsUser() {
+                return setAliasAsUser;
+            }
+
+        };
         return new FileVaultCredentialsProvider(config);
     }
 
