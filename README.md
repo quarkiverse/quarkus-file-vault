@@ -7,6 +7,14 @@ _Credentials Provider and ConfigSource which extracts secrets from Java KeyStore
 
 This project provides Quarkus [CredentialsProvider](https://quarkus.io/guides/credentials-provider) and MicroProfile [ConfigSource](https://quarkus.io/guides/config-extending-support#custom-config-source) which extracts sensitive data such as passwords from Java KeyStore.
 
+[NOTE]
+====
+Most of the functionality provided by this extension is now available in `SmallRye Config` directly:
+
+https://smallrye.io/smallrye-config/Main/config/secret-keys/
+https://smallrye.io/smallrye-config/Main/config-sources/keystore/
+====
+
 To get started with using `File Vault` as `CredentialsProvider`, add the dependency:
 
 ```xml
